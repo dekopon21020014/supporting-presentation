@@ -6,6 +6,7 @@ from io import BytesIO
 
 router = APIRouter(tags=["Demo"], default_response_class=ORJSONResponse)
 
+
 @router.get(
     path="/",
     status_code=status.HTTP_200_OK,
@@ -26,6 +27,7 @@ router = APIRouter(tags=["Demo"], default_response_class=ORJSONResponse)
 async def get_demo():
     return {"message": "hello"}
 
+
 @router.post(
     path="/upload",
     status_code=status.HTTP_200_OK,
@@ -39,6 +41,7 @@ async def get_demo():
     },
 )
 async def upload_pptx(file: UploadFile = File(...)):
+
     # ファイルの読み込み
     file_content = await file.read()
 
