@@ -1,0 +1,8 @@
+FROM node:22.11.0
+
+# 作業ディレクトリを設定
+WORKDIR /usr/src/app
+
+# ソースコードをコピー
+COPY /front/ ./
+# docker compose run front sh -c "npx create-next-app@latest . --use-npm"

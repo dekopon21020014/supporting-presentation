@@ -1,0 +1,30 @@
+services:
+  front:
+    container_name: front
+    build:
+      dockerfile: ./dockerfiles/Dockerfile.front
+      context: .
+    tty: true
+    volumes:
+      - ./front:/usr/src/app
+    environment:
+      - WATCHPACK_POLLING=true
+    command: sh -c "npm run dev"
+    ports:
+      - "3000:3000"
+  
+  back:
+    container_name: back
+    build:
+      dockerfile: ./dockerfiles/Dockerfile.back
+    volumes:
+      - ./back/:/usr/src/app
+    command: sh -c  "uvicorn main:app --reload --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+      #- "60067:60067"
+    networks:
+      - default
+       
+    tty: true
+    restart: always

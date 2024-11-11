@@ -1,0 +1,7 @@
+fastapi[all]
+uvicorn[standard]
+pipx
+requests
+load_dotenv
+mecab-python3
+python-pptx
