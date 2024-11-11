@@ -1,13 +1,25 @@
+# Python 3.10ベースのイメージを使用
 FROM python:3.10
 
+# タイムゾーン設定
 ENV TZ Asia/Tokyo
 
+# 作業ディレクトリを設定
 WORKDIR /usr/src/app
 
+# 必要なパッケージとライブラリのインストール
+RUN apt-get update && \
+    apt-get install -y mecab libmecab-dev mecab-ipadic-utf8 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Pythonの依存パッケージのインストール
 COPY back/requirements.txt ./
-
-#RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt    
+    pip install -r requirements.txt
 
+# 環境変数でMeCab設定ファイルのパスを指定
+ENV MECABRC /etc/mecabrc
+
+# アプリケーションコードをコピー
 COPY . .

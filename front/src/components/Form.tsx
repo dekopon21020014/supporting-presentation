@@ -2,25 +2,45 @@
 
 import React, { useState, ChangeEvent, useRef } from "react";
 import { Button, Typography, Paper, List, ListItem } from "@mui/material";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const Form = () => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<{
     slide_count: number;
-    slide_titles: (string | null)[];
+    pos_counts: { [key: string]: number };
+    top_nouns: [string, number][];
+    top_verbs: [string, number][];
+    top_particles: [string, number][];
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ファイル選択時の処理
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
-      setUploadResult(null); // 新しいファイルを選択したときに前の結果をリセット
+      setUploadResult(null);
     }
   };
 
-  // ファイル送信処理
   const handleUpload = async () => {
     if (!file) return;
 
@@ -37,7 +57,7 @@ const Form = () => {
 
       if (response.ok) {
         const result = await response.json();
-        setUploadResult(result); // サーバーからのレスポンスを保存
+        setUploadResult(result);
       } else {
         console.error("Failed to upload file");
       }
@@ -46,6 +66,18 @@ const Form = () => {
     } finally {
       setUploading(false);
     }
+  };
+
+  // グラフデータの設定
+  const data = {
+    labels: uploadResult ? Object.keys(uploadResult.pos_counts) : [],
+    datasets: [
+      {
+        label: "品詞ごとのカウント",
+        data: uploadResult ? Object.values(uploadResult.pos_counts) : [],
+        backgroundColor: "rgba(75, 192, 192, 0.6)",
+      },
+    ],
   };
 
   return (
@@ -99,9 +131,47 @@ const Form = () => {
         <div style={{ marginTop: "20px" }}>
           <Typography variant="h6">アップロード結果</Typography>
           <Typography>スライド数: {uploadResult.slide_count}</Typography>
+
+          {/* 全品詞のカウントのグラフ */}
+          <Bar
+            data={data}
+            options={{
+              responsive: true,
+              plugins: { legend: { position: "top" } },
+            }}
+          />
+
+          {/* トップ3の名詞、動詞、助詞をリスト表示 */}
+          <Typography variant="h6" sx={{ marginTop: 4 }}>
+            名詞のトップ3
+          </Typography>
           <List>
-            {uploadResult.slide_titles.map((title, index) => (
-              <ListItem key={index}>{title || "タイトルなし"}</ListItem>
+            {uploadResult.top_nouns.map(([noun, count], index) => (
+              <ListItem key={index}>
+                {index + 1}位: {noun} ({count}回)
+              </ListItem>
+            ))}
+          </List>
+
+          <Typography variant="h6" sx={{ marginTop: 4 }}>
+            動詞のトップ3
+          </Typography>
+          <List>
+            {uploadResult.top_verbs.map(([verb, count], index) => (
+              <ListItem key={index}>
+                {index + 1}位: {verb} ({count}回)
+              </ListItem>
+            ))}
+          </List>
+
+          <Typography variant="h6" sx={{ marginTop: 4 }}>
+            助詞のトップ3
+          </Typography>
+          <List>
+            {uploadResult.top_particles.map(([particle, count], index) => (
+              <ListItem key={index}>
+                {index + 1}位: {particle} ({count}回)
+              </ListItem>
             ))}
           </List>
         </div>
