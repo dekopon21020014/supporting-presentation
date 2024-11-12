@@ -56,34 +56,47 @@ async def upload_pptx(file: UploadFile = File(...)):
         if hasattr(shape, "text") and shape.text.strip()
     )
 
-    # 形態素解析と品詞カウント
-    mecab = MeCab.Tagger()
-    parsed_text = mecab.parse(all_text)
-
+    # 形態素解析と品詞カウント    
     pos_counts = Counter()  # 品詞のカウント
-    noun_counts = Counter()  # 名詞の頻度カウント
-    verb_counts = Counter()  # 動詞の頻度カウント
-    particle_counts = Counter()  # 助詞の頻度カウント
+    surface_counts = {} # 単語のごとのカウント    
+    '''
+    surface_countsはこんな感じになる
+    surface_counts = {
+        'BOS/EOS': Counter({'': 2}), 
+        '名詞': Counter({'30': 9, '回': 7, '発表': 6}),
+        '接尾辞': Counter({'日': 6, 'さん': 4}),
+        '助詞': Counter({'の': 23, 'て': 14}),
+        '接頭辞': Counter({'第': 5, 'お': 3, 'ご': 1}), 
+        '補助記号': Counter({'、': 16, '（': 9, '）': 9}),
+        '助動詞': Counter({'た': 4, 'ます': 3}),
+        '記号': Counter({'-': 6, 'ち': 1}), 
+        '動詞': Counter({'し': 7, 'いる': 4}),
+        '副詞': Counter({'ぜひ': 2, 'もう': 1}), 
+        '形状詞': Counter({'たくさん': 1, '可能': 1}), 
+        '代名詞': Counter({'どこ': 1, 'ここ': 1}), 
+        '連体詞': Counter({'この': 1, 'その': 1}), 
+        '感動詞': Counter({'ん': 1}), 
+        '形容詞': Counter({'小さく': 1})}
+    }
+    '''
+    
+    mecab = MeCab.Tagger()
+    node = mecab.parseToNode(all_text)
+    while node:
+        surface = node.surface
+        pos = node.feature.split(",")[0]
+        pos_counts[pos] += 1
 
-    for line in parsed_text.splitlines():
-        if "\t" in line:
-            surface, feature = line.split("\t")
-            pos = feature.split(",")[0]  # 品詞（名詞、動詞など）を取得
-
-            pos_counts[pos] += 1
-
-            if pos == "名詞":
-                noun_counts[surface] += 1
-            elif pos == "動詞":
-                verb_counts[surface] += 1
-            elif pos == "助詞":
-                particle_counts[surface] += 1
+        if pos not in surface_counts:
+            surface_counts[pos] = Counter()
+        surface_counts[pos][surface] += 1
+        node = node.next
 
     # 上位3位の名詞、動詞、助詞を取得
-    top_nouns = noun_counts.most_common(3)
-    top_verbs = verb_counts.most_common(3)
-    top_particles = particle_counts.most_common(3)
-
+    top_nouns     = surface_counts['名詞'].most_common(3) # noun_counts.most_common(3)
+    top_verbs     = surface_counts['動詞'].most_common(3) # verb_counts.most_common(3)
+    top_particles = surface_counts['助詞'].most_common(3) # particle_counts.most_common(3)
+    print(surface_counts)
     # 結果を返す
     return {
         "message": "File processed successfully",
