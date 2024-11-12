@@ -12,7 +12,7 @@ services:
     command: sh -c "npm run dev"
     ports:
       - "3000:3000"
-  
+
   back:
     container_name: back
     build:
@@ -25,6 +25,6 @@ services:
       #- "60067:60067"
     networks:
       - default
-       
+
     tty: true
     restart: always
