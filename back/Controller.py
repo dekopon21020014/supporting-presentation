@@ -42,7 +42,6 @@ async def get_demo():
         },
     },
 )
-
 async def upload_pptx(file: UploadFile = File(...)):
     # ファイルの読み込み
     file_content = await file.read()
@@ -56,9 +55,9 @@ async def upload_pptx(file: UploadFile = File(...)):
         if hasattr(shape, "text") and shape.text.strip()
     )
 
-    # 形態素解析と品詞カウント    
+    # 形態素解析と品詞カウント
     pos_counts = Counter()  # 品詞のカウント
-    surface_counts = {} # 単語のごとのカウント    
+    surface_counts = {}  # 単語のごとのカウント
     '''
     surface_countsはこんな感じになる
     surface_counts = {
@@ -79,7 +78,7 @@ async def upload_pptx(file: UploadFile = File(...)):
         '形容詞': Counter({'小さく': 1})}
     }
     '''
-    
+
     mecab = MeCab.Tagger()
     node = mecab.parseToNode(all_text)
     while node:
@@ -93,9 +92,12 @@ async def upload_pptx(file: UploadFile = File(...)):
         node = node.next
 
     # 上位3位の名詞、動詞、助詞を取得
-    top_nouns     = surface_counts['名詞'].most_common(3) # noun_counts.most_common(3)
-    top_verbs     = surface_counts['動詞'].most_common(3) # verb_counts.most_common(3)
-    top_particles = surface_counts['助詞'].most_common(3) # particle_counts.most_common(3)
+    top_nouns = surface_counts['名詞'].most_common(
+        3)  # noun_counts.most_common(3)
+    top_verbs = surface_counts['動詞'].most_common(
+        3)  # verb_counts.most_common(3)
+    top_particles = surface_counts['助詞'].most_common(
+        3)  # particle_counts.most_common(3)
     print(surface_counts)
     # 結果を返す
     return {
